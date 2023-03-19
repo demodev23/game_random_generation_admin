@@ -31,8 +31,8 @@ class _MyHomepageState extends State<MyHomepage> {
                         MaterialPageRoute(
                             builder: (context) => category_list()));
                   },
-                  child: Text("Add New Data")),
-              ElevatedButton(onPressed: () {}, child: Text("Edit Data")),
+                  child: Text("Add Category / Subcategory")),
+              ElevatedButton(onPressed: () {}, child: Text("Add Data")),
             ],
           ),
         ),
