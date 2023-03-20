@@ -179,6 +179,231 @@ class _subcategory_listState extends State<subcategory_list> {
                               ),
                               onTap: () {
                                 showDialog(
+                                    context: context,
+                                    barrierDismissible: false,
+                                    builder: (sdcontext) {
+                                      return AlertDialog(
+                                        actionsAlignment:
+                                            MainAxisAlignment.spaceEvenly,
+                                        content: Text(
+                                          "Operations on this Category",
+                                          style: TextStyle(fontSize: 20),
+                                        ),
+                                        actions: [
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                    barrierDismissible: false,
+                                                    context: context,
+                                                    builder: (subcontext) {
+                                                      return AlertDialog(
+                                                        actionsAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        content: Text(
+                                                          "Are You Sure ? ",
+                                                        ),
+                                                        actions: [
+                                                          ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    subcontext);
+                                                              },
+                                                              child:
+                                                                  Text("No")),
+                                                          ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                final deleter =
+                                                                    FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            "${widget.lang_code}_${categories[index].toString().toLowerCase()}_words");
+                                                                deleter.get().then(
+                                                                    (snapshot) {
+                                                                  for (DocumentSnapshot doc
+                                                                      in snapshot
+                                                                          .docs) {
+                                                                    doc.reference
+                                                                        .delete();
+                                                                  }
+                                                                });
+
+                                                                final main_cat_db =
+                                                                    FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            "${widget.lang_code}_main_category");
+                                                                final temp =
+                                                                    await main_cat_db
+                                                                        .get();
+                                                                final temp2 =
+                                                                    await temp
+                                                                        .docs
+                                                                        .first
+                                                                        .reference;
+                                                                temp2.set(
+                                                                    {
+                                                                      "category":
+                                                                          FieldValue
+                                                                              .arrayRemove([
+                                                                        categories[
+                                                                            index]
+                                                                      ]),
+                                                                    },
+                                                                    SetOptions(
+                                                                        merge:
+                                                                            true));
+
+                                                                Navigator.pop(
+                                                                    subcontext);
+                                                                Navigator.pop(
+                                                                    sdcontext);
+                                                              },
+                                                              child: Text(
+                                                                  "Yes Delete")),
+                                                        ],
+                                                      );
+                                                    });
+                                              },
+                                              child: Text("Delete")),
+                                          ElevatedButton(
+                                              onPressed: () {
+                                                showDialog(
+                                                    barrierDismissible: false,
+                                                    useSafeArea: true,
+                                                    context: context,
+                                                    builder: (sdcontext) {
+                                                      return AlertDialog(
+                                                        scrollable: true,
+                                                        title: Text(
+                                                            "Add Sub category"),
+                                                        content: Column(
+                                                          children: [
+                                                            Form(
+                                                              key:
+                                                                  subcat_form_key,
+                                                              child:
+                                                                  TextFormField(
+                                                                keyboardType:
+                                                                    TextInputType
+                                                                        .name,
+                                                                cursorHeight:
+                                                                    18,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        20,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .black),
+                                                                controller:
+                                                                    internal_sub_cat,
+                                                                decoration: InputDecoration(
+                                                                    constraints: BoxConstraints(
+                                                                        minWidth:
+                                                                            MediaQuery.of(context).size.width *
+                                                                                0.75,
+                                                                        maxWidth:
+                                                                            MediaQuery.of(context).size.width *
+                                                                                0.75),
+                                                                    hintText:
+                                                                        "sub category name",
+                                                                    hintStyle: TextStyle(
+                                                                        fontSize:
+                                                                            20),
+                                                                    border: OutlineInputBorder(
+                                                                        borderSide: BorderSide(
+                                                                            color:
+                                                                                Colors.black,
+                                                                            width: 1))),
+                                                                onTapOutside:
+                                                                    (event) {
+                                                                  FocusScope.of(
+                                                                          context)
+                                                                      .unfocus();
+                                                                },
+                                                                validator:
+                                                                    (value) {
+                                                                  if (value!
+                                                                          .isEmpty ||
+                                                                      !RegExp(r'^[a-z A-Z]+$')
+                                                                          .hasMatch(
+                                                                              value)) {
+                                                                    return "Enter Atleast One Subcategory...";
+                                                                  }
+                                                                  return null;
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        actionsAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        actions: [
+                                                          ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    sdcontext);
+                                                              },
+                                                              child: Text(
+                                                                  "Cancel")),
+                                                          ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                if (subcat_form_key
+                                                                        .currentState!
+                                                                        .validate() ==
+                                                                    true) {
+                                                                  final demo = FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          '${widget.lang_code}_${categories[index].toLowerCase().toString()}_words');
+                                                                  demo
+                                                                      .doc(internal_sub_cat
+                                                                          .text)
+                                                                      .set({
+                                                                    'words': []
+                                                                  });
+                                                                }
+
+                                                                internal_sub_cat
+                                                                    .text = "";
+                                                                Navigator.pop(
+                                                                    sdcontext);
+                                                              },
+                                                              child:
+                                                                  Text("Add")),
+                                                        ],
+                                                      );
+                                                    });
+                                              },
+                                              child: Text("Add Sub Category"))
+                                        ],
+                                      );
+                                    });
+                              },
+                            );
+                          },
+                        ),
+                      );
+                    }
+                    return CircularProgressIndicator();
+                  })
+            ],
+          ),
+        ),
+      ),
+    );
+  }
+}
+
+
+/*
+
+showDialog(
                                     barrierDismissible: false,
                                     useSafeArea: true,
                                     context: context,
@@ -259,18 +484,7 @@ class _subcategory_listState extends State<subcategory_list> {
                                         ),
                                       );
                                     });
-                              },
-                            );
-                          },
-                        ),
-                      );
-                    }
-                    return CircularProgressIndicator();
-                  })
-            ],
-          ),
-        ),
-      ),
-    );
-  }
-}
+
+
+
+                                    */
