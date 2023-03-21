@@ -1,6 +1,7 @@
 import 'package:flutter/material.dart';
 import 'package:game_random_generation_admin/add_new_category.dart';
 import 'package:game_random_generation_admin/add_new_language.dart';
+import 'package:game_random_generation_admin/edit_data.dart';
 
 class MyHomepage extends StatefulWidget {
   const MyHomepage({super.key});
@@ -32,7 +33,14 @@ class _MyHomepageState extends State<MyHomepage> {
                             builder: (context) => category_list()));
                   },
                   child: Text("Add Category / Subcategory")),
-              ElevatedButton(onPressed: () {}, child: Text("Add Data")),
+              ElevatedButton(
+                  onPressed: () {
+                    Navigator.push(
+                        context,
+                        MaterialPageRoute(
+                            builder: (context) => SelectLanguage()));
+                  },
+                  child: Text("Add Data")),
             ],
           ),
         ),

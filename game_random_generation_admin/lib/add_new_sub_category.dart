@@ -23,20 +23,6 @@ class _subcategory_listState extends State<subcategory_list> {
     // TODO: implement initState
 
     super.initState();
-
-    _retrievedata();
-  }
-
-  _retrievedata() async {
-    final main_cat_db = FirebaseFirestore.instance
-        .collection("${widget.lang_code}_main_category");
-    var temp2 = await main_cat_db
-        .get()
-        .then((value) => value.docs.single.get('category'));
-
-    setState(() {
-      main_category = temp2;
-    });
   }
 
   @override
