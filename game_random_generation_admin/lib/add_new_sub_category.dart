@@ -1,5 +1,6 @@
 import 'package:cloud_firestore/cloud_firestore.dart';
 import 'package:flutter/material.dart';
+import 'package:game_random_generation_admin/add_new_category.dart';
 import 'package:game_random_generation_admin/models/firebase_collection.dart';
 
 class subcategory_list extends StatefulWidget {
@@ -15,8 +16,10 @@ class _subcategory_listState extends State<subcategory_list> {
   TextEditingController new_cat = TextEditingController();
   TextEditingController sub_cat = TextEditingController();
   TextEditingController internal_sub_cat = TextEditingController();
+  TextEditingController DataEditorString = TextEditingController();
   final form_key = GlobalKey<FormState>();
   final subcat_form_key = GlobalKey<FormState>();
+  final edit_data_key = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -150,9 +153,9 @@ class _subcategory_listState extends State<subcategory_list> {
                       .snapshots(),
                   builder: (context, snapshot) {
                     if (snapshot.hasData) {
-                      List<dynamic> categories =
-                          snapshot.data!.docs.first.get('category');
-                      print(categories);
+                      List<dynamic> categories = [];
+                      categories = snapshot.data!.docs.first.get('category');
+
                       return Expanded(
                         child: ListView.builder(
                           itemCount: categories.length,
@@ -170,7 +173,7 @@ class _subcategory_listState extends State<subcategory_list> {
                                     builder: (sdcontext) {
                                       return AlertDialog(
                                         actionsAlignment:
-                                            MainAxisAlignment.spaceEvenly,
+                                            MainAxisAlignment.center,
                                         content: Text(
                                           "Operations on this Category",
                                           style: TextStyle(fontSize: 20),
@@ -366,7 +369,189 @@ class _subcategory_listState extends State<subcategory_list> {
                                                       );
                                                     });
                                               },
-                                              child: Text("Add Sub Category"))
+                                              child: Text("Add Sub Category")),
+                                          ElevatedButton(
+                                              onPressed: () async {
+                                                DataEditorString.text =
+                                                    categories[index];
+                                                showDialog(
+                                                    barrierDismissible: false,
+                                                    useSafeArea: true,
+                                                    context: context,
+                                                    builder: (innercontext) {
+                                                      return AlertDialog(
+                                                        scrollable: true,
+                                                        title:
+                                                            Text("Edit Data"),
+                                                        content: Column(
+                                                          children: [
+                                                            Form(
+                                                              key:
+                                                                  edit_data_key,
+                                                              child:
+                                                                  TextFormField(
+                                                                keyboardType:
+                                                                    TextInputType
+                                                                        .name,
+                                                                cursorHeight:
+                                                                    18,
+                                                                style: TextStyle(
+                                                                    fontSize:
+                                                                        20,
+                                                                    fontWeight:
+                                                                        FontWeight
+                                                                            .bold,
+                                                                    color: Colors
+                                                                        .black),
+                                                                controller:
+                                                                    DataEditorString,
+                                                                decoration: InputDecoration(
+                                                                    constraints: BoxConstraints(
+                                                                        minWidth:
+                                                                            MediaQuery.of(context).size.width *
+                                                                                0.75,
+                                                                        maxWidth:
+                                                                            MediaQuery.of(context).size.width *
+                                                                                0.75),
+                                                                    hintText:
+                                                                        "Enter Data",
+                                                                    hintStyle: TextStyle(
+                                                                        fontSize:
+                                                                            20),
+                                                                    border: OutlineInputBorder(
+                                                                        borderSide: BorderSide(
+                                                                            color:
+                                                                                Colors.black,
+                                                                            width: 1))),
+                                                                onTapOutside:
+                                                                    (event) {
+                                                                  FocusScope.of(
+                                                                          context)
+                                                                      .unfocus();
+                                                                },
+                                                              ),
+                                                            ),
+                                                          ],
+                                                        ),
+                                                        actionsAlignment:
+                                                            MainAxisAlignment
+                                                                .spaceEvenly,
+                                                        actions: [
+                                                          ElevatedButton(
+                                                              onPressed: () {
+                                                                Navigator.pop(
+                                                                    innercontext);
+                                                              },
+                                                              child: Text(
+                                                                  "Cancel")),
+                                                          ElevatedButton(
+                                                              onPressed:
+                                                                  () async {
+                                                                if (edit_data_key
+                                                                        .currentState!
+                                                                        .validate() ==
+                                                                    true) {
+                                                                  final QuerySnapshot
+                                                                      querySnapshot =
+                                                                      await FirebaseFirestore
+                                                                          .instance
+                                                                          .collection(
+                                                                              "${widget.lang_code}_${categories[index].toString().toLowerCase()}_words")
+                                                                          .get();
+
+                                                                  for (QueryDocumentSnapshot docSnapshot
+                                                                      in querySnapshot
+                                                                          .docs) {
+                                                                    var temp =
+                                                                        await docSnapshot
+                                                                            .get('words');
+
+                                                                    await FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            "${widget.lang_code}_${DataEditorString.text.toLowerCase()}_words")
+                                                                        .doc(docSnapshot
+                                                                            .id)
+                                                                        .set({
+                                                                      'words':
+                                                                          temp
+                                                                    }, SetOptions(merge: true));
+                                                                  }
+
+                                                                  final deleter = FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "${widget.lang_code}_${categories[index].toString().toLowerCase()}_words");
+                                                                  deleter
+                                                                      .get()
+                                                                      .then(
+                                                                          (snapshot) async {
+                                                                    for (DocumentSnapshot doc
+                                                                        in snapshot
+                                                                            .docs) {
+                                                                      await doc
+                                                                          .reference
+                                                                          .delete();
+                                                                    }
+                                                                  });
+
+                                                                  final main_cat_db = await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "${widget.lang_code}_main_category")
+                                                                      .limit(1)
+                                                                      .get();
+
+                                                                  final docid =
+                                                                      main_cat_db
+                                                                          .docs
+                                                                          .first
+                                                                          .id;
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "${widget.lang_code}_main_category")
+                                                                      .doc(docid
+                                                                          .toString())
+                                                                      .set({
+                                                                    'category':
+                                                                        FieldValue
+                                                                            .arrayRemove([
+                                                                      categories[
+                                                                          index]
+                                                                    ])
+                                                                  }, SetOptions(merge: true));
+
+                                                                  await FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          "${widget.lang_code}_main_category")
+                                                                      .doc(docid
+                                                                          .toString())
+                                                                      .set({
+                                                                    'category':
+                                                                        FieldValue
+                                                                            .arrayUnion([
+                                                                      DataEditorString
+                                                                          .text
+                                                                    ])
+                                                                  }, SetOptions(merge: true));
+                                                                }
+
+                                                                DataEditorString
+                                                                    .text = "";
+                                                                Navigator.pop(
+                                                                    innercontext);
+                                                                Navigator.pop(
+                                                                    sdcontext);
+                                                              },
+                                                              child:
+                                                                  Text("Edit")),
+                                                        ],
+                                                      );
+                                                    });
+                                              },
+                                              child: Text("Edit"))
                                         ],
                                       );
                                     });

@@ -289,8 +289,10 @@ class DataCRUDPage extends StatefulWidget {
 
 class _DataCRUDPageState extends State<DataCRUDPage> {
   TextEditingController DataString = TextEditingController();
+  TextEditingController DataEditorString = TextEditingController();
 
   final data_form_key = GlobalKey<FormState>();
+  final edit_data_key = GlobalKey<FormState>();
 
   @override
   void initState() {
@@ -414,6 +416,206 @@ class _DataCRUDPageState extends State<DataCRUDPage> {
                                       fontSize: 18,
                                       fontWeight: FontWeight.bold),
                                 ),
+                                onTap: () {
+                                  showDialog(
+                                      context: context,
+                                      barrierDismissible: false,
+                                      builder: (sdcontext) {
+                                        return AlertDialog(
+                                          actionsAlignment:
+                                              MainAxisAlignment.spaceEvenly,
+                                          content: Text(
+                                            "Operations on this Category",
+                                            style: TextStyle(fontSize: 20),
+                                          ),
+                                          actions: [
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  showDialog(
+                                                      barrierDismissible: false,
+                                                      context: context,
+                                                      builder: (subcontext) {
+                                                        return AlertDialog(
+                                                          actionsAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceEvenly,
+                                                          content: Text(
+                                                            "Are You Sure ? ",
+                                                          ),
+                                                          actions: [
+                                                            ElevatedButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      subcontext);
+                                                                },
+                                                                child:
+                                                                    Text("No")),
+                                                            ElevatedButton(
+                                                                onPressed:
+                                                                    () async {
+                                                                  final deleter = FirebaseFirestore
+                                                                      .instance
+                                                                      .collection(
+                                                                          widget
+                                                                              .CollectionName)
+                                                                      .doc(widget
+                                                                          .subcat_name);
+                                                                  deleter.set(
+                                                                      {
+                                                                        'words':
+                                                                            FieldValue.arrayRemove([
+                                                                          words[
+                                                                              index]
+                                                                        ])
+                                                                      },
+                                                                      SetOptions(
+                                                                          merge:
+                                                                              true));
+
+                                                                  Navigator.pop(
+                                                                      subcontext);
+                                                                  Navigator.pop(
+                                                                      sdcontext);
+                                                                },
+                                                                child: Text(
+                                                                    "Yes Delete")),
+                                                          ],
+                                                        );
+                                                      });
+                                                },
+                                                child: Text("Delete")),
+                                            ElevatedButton(
+                                                onPressed: () {
+                                                  DataEditorString.text =
+                                                      words[index].toString();
+                                                  showDialog(
+                                                      barrierDismissible: false,
+                                                      useSafeArea: true,
+                                                      context: context,
+                                                      builder: (innercontext) {
+                                                        return AlertDialog(
+                                                          scrollable: true,
+                                                          title:
+                                                              Text("Edit Data"),
+                                                          content: Column(
+                                                            children: [
+                                                              Form(
+                                                                key:
+                                                                    edit_data_key,
+                                                                child:
+                                                                    TextFormField(
+                                                                  keyboardType:
+                                                                      TextInputType
+                                                                          .name,
+                                                                  cursorHeight:
+                                                                      18,
+                                                                  style: TextStyle(
+                                                                      fontSize:
+                                                                          20,
+                                                                      fontWeight:
+                                                                          FontWeight
+                                                                              .bold,
+                                                                      color: Colors
+                                                                          .black),
+                                                                  controller:
+                                                                      DataEditorString,
+                                                                  decoration: InputDecoration(
+                                                                      constraints: BoxConstraints(
+                                                                          minWidth: MediaQuery.of(context).size.width *
+                                                                              0.75,
+                                                                          maxWidth: MediaQuery.of(context).size.width *
+                                                                              0.75),
+                                                                      hintText:
+                                                                          "Enter Data",
+                                                                      hintStyle: TextStyle(
+                                                                          fontSize:
+                                                                              20),
+                                                                      border: OutlineInputBorder(
+                                                                          borderSide: BorderSide(
+                                                                              color: Colors.black,
+                                                                              width: 1))),
+                                                                  onTapOutside:
+                                                                      (event) {
+                                                                    FocusScope.of(
+                                                                            context)
+                                                                        .unfocus();
+                                                                  },
+                                                                  validator:
+                                                                      (value) {
+                                                                    if (value!
+                                                                        .isEmpty) {
+                                                                      return "No Empty Text...";
+                                                                    }
+                                                                    return null;
+                                                                  },
+                                                                ),
+                                                              ),
+                                                            ],
+                                                          ),
+                                                          actionsAlignment:
+                                                              MainAxisAlignment
+                                                                  .spaceEvenly,
+                                                          actions: [
+                                                            ElevatedButton(
+                                                                onPressed: () {
+                                                                  Navigator.pop(
+                                                                      innercontext);
+                                                                },
+                                                                child: Text(
+                                                                    "Cancel")),
+                                                            ElevatedButton(
+                                                                onPressed:
+                                                                    () async {
+                                                                  if (edit_data_key
+                                                                          .currentState!
+                                                                          .validate() ==
+                                                                      true) {
+                                                                    final demo = FirebaseFirestore
+                                                                        .instance
+                                                                        .collection(
+                                                                            widget.CollectionName);
+                                                                    demo
+                                                                        .doc(widget
+                                                                            .subcat_name)
+                                                                        .set({
+                                                                      'words':
+                                                                          FieldValue
+                                                                              .arrayRemove([
+                                                                        words[
+                                                                            index]
+                                                                      ])
+                                                                    }, SetOptions(merge: true));
+                                                                    demo
+                                                                        .doc(widget
+                                                                            .subcat_name)
+                                                                        .set({
+                                                                      'words':
+                                                                          FieldValue
+                                                                              .arrayUnion([
+                                                                        DataEditorString
+                                                                            .text
+                                                                      ])
+                                                                    }, SetOptions(merge: true));
+                                                                  }
+
+                                                                  DataEditorString
+                                                                      .text = "";
+                                                                  Navigator.pop(
+                                                                      sdcontext);
+                                                                  Navigator.pop(
+                                                                      innercontext);
+                                                                },
+                                                                child: Text(
+                                                                    "Edit")),
+                                                          ],
+                                                        );
+                                                      });
+                                                },
+                                                child: Text("Edit Data"))
+                                          ],
+                                        );
+                                      });
+                                },
                               );
                             },
                             separatorBuilder: (context, index) {

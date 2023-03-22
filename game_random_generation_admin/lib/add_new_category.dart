@@ -76,7 +76,6 @@ class _category_listState extends State<category_list> {
             ),
             ElevatedButton(
                 onPressed: () {
-                  print(languages[sel_lang]);
                   Navigator.push(
                       context,
                       MaterialPageRoute(
